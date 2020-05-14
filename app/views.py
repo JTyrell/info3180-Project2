@@ -77,7 +77,7 @@ def register():
             
                 #flash success message 
                 response = "User registered sucessfully"
-                return jsonify(message=responses), 201
+                return jsonify(message=response), 201
                 
         except Exception as e:
             print(e)
@@ -105,7 +105,7 @@ def login():
             login_user(user)
 
             #creates bearer token 
-            jwt_token = jwt.encode('user': user.username, app.config['SECRET_KEY'], algorithm = 'HS256').decode('utf-8')
+            jwt_token = jwt.encode({'user': user.username}, app.config['SECRET_KEY'], algorithm = 'HS256').decode('utf-8')
 
             #Flash message for a successful login
             response = "Your login was successful"
@@ -256,7 +256,7 @@ def like(post_id):
             response = "Post Liked!"
             return jsonify(message=response, likes=len(post.likes)), 201
         except:
-            reponse= "could not like post"
+            response= "could not like post"
             return jsonify(error=response)
     
    
