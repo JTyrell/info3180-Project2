@@ -6,6 +6,7 @@ This file creates your application.
 """
 import os
 import datetime, base64, jwt
+from functools import wraps
 from app import app, db, csrf, login_manager
 from flask import render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_user, logout_user, current_user, login_required
