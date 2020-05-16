@@ -267,6 +267,8 @@ def like(post_id):
 # Please create all new routes and view functions above this route.
 # This route is now our catch all route for our VueJS single page
 # application.
+
+
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def index(path):
@@ -277,7 +279,7 @@ def index(path):
 
     Also we will render the initial webpage and then let VueJS take control.
     """
-    return render_template('index.html')
+    return app.send_static_file('index.html')
 
 
 # user_loader callback. This callback is used to reload the user object from

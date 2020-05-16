@@ -185,7 +185,7 @@ const Register= Vue.component('register', {template:
     methods : {
         Regist : function(){
             
-            })
+            }
                 
     }
 });
@@ -228,6 +228,7 @@ const Login = Vue.component('login', {
         Login : function(){
                
     }
+}
  
 });
 
@@ -282,10 +283,7 @@ const Explore = Vue.component('explore', {template:`
 `,
     created: function() {
         
-        });
-
-        
-    }, 
+        }, 
     data: function() {
         
     },
@@ -348,6 +346,7 @@ const uploadpost= Vue.component('upload-form', {
     },
     methods: {
         
+}
 });
 
 
