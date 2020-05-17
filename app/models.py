@@ -1,68 +1,56 @@
 from . import db
-import datetime
+from werkzeug.security import generate_password_hash
+from datetime import date
+
+class Posts(db.Model):  
+    __tablename__= 'Posts' 
+    
+    id = db.Column(db.Integer, primary_key=True)  
+    user_id = db.Column(db.Integer, db.ForeignKey('Users.id', ondelete='CASCADE'), nullable=False)  
+    photo =  db.Column(db.String(200), nullable=False) 
+    caption = db.Column(db.String (300)) 
+    created_on = db.Column(db.Date()) 
+
+    #Relationship between a posts and its likes
+    likes = db.relationship('Likes', backref='Posts', passive_deletes=True, lazy=True)
+
+    def __init__ (self,user_id, photo, caption): 
+        self.user_id = user_id
+        self.photo = photo 
+        self.caption = caption 
+        self.created_on = date.today()
 
 
-class UserProfile(db.Model):
+class Users(db.Model):
     __tablename__ = 'Users'
 
     id = db.Column(db.Integer, primary_key=True) 
-    username = db.Column(db.String(40)) 
-    password = db.Column (db.CharField(widget=db.PasswordInput))
-    firstname = db.Column(db.String(40))
-    lastname = db.Column(db.String(40))
-    email = db.Column(db.String(80), unique=True)
-    location = db.Column(db.String(80))
-    biography = db.Column(db.String(1000))
-    profile_photo = db.Column(db.String(40)) 
-    joined_on = db.Column(db.DateTimeField(auto_now_add=True)) 
+    username = db.Column(db.String(40), nullable=False, unique=True) 
+    password = db.Column (db.String(40), nullable=False)
+    firstname = db.Column(db.String(40), nullable=False)
+    lastname = db.Column(db.String(40), nullable=False)
+    email = db.Column(db.String(80), nullable=False,unique=True)
+    location = db.Column(db.String(80), nullable=False)
+    biography = db.Column(db.String(1000), nullable=False)
+    profile_photo = db.Column(db.String(40), nullable=False) 
+    joined_on = db.Column(db.Date()) 
+
+    #Relationship among the users the posts, the likes and the followers
+    posts = db.relationship('Posts', backref='Users', passive_deletes=True, lazy=True)
+    likes = db.relationship('Likes', backref='Users', passive_deletes=True, lazy=True)
+    followers = db.relationship('Follows', backref='Users', passive_deletes=True, lazy=True)
 
     
-    def __init__(self,username,password, firstname, lastname, email, location, gender, bio, fileName):  
+    def __init__(self,username,password, firstname, lastname, email, location, bio, fileName):  
         self.username = username 
-        self.password = password 
+        self.password = generate_password_hash(password, method='pbkdf2:sha256')
         self.firstname = firstname
         self.lastname = lastname
         self.email = email
         self.location = location
         self.biography = bio
         self.profile_photo = fileName
-
-
-class Post(db.Model):  
-    __tablename__= 'Posts' 
-    
-    id = db.Column(db.ForeignKey(UserProfile, on_delete= db.CASCADE, on_update= CASCADE))  
-    user_id = db.Column(db.Integer, primary_key=True)  
-    photo =  db.Column(db.String(40)) 
-    caption = db.Column(db.String (300)) 
-    created_on = db.Column(db.DateTimeField(auto_now_add=True)) 
-
-    def __init__ (self,photo, caption): 
-        self.photo = photo 
-        self.caption = caption 
-
-
-
-class Like(db.Model): 
-    __tablename__= 'Likes' 
-
-    id = db.Column(db.ForeignKey(UserProfile, on_delete= db.CASCADE, on_update= CASCADE))   
-    user_id = db.Column( db.ForeignKey(Post, on_delete= db.CASCADE, on_update= CASCADE))  
-    post_id = db.Column(db.Integer, primary_key=True)   
-
-
-class Follow (db.Model): 
-    __tablename__= 'Follows'  
-
-    id = db.Column(db.ForeignKey(UserProfile, on_delete= db.CASCADE, on_update= CASCADE))  
-    user_id = db.Column( db.ForeignKey(Post, on_delete= db.CASCADE, on_update= CASCADE))    
-    follower_id = db.Column(db.Integer, primary_key=True)   
-
-
-    
-
-
-
+        self.joined_on = date.today()
 
     def is_authenticated(self):
         return True
@@ -81,3 +69,23 @@ class Follow (db.Model):
 
     def __repr__(self):
         return '<User %r>' % (self.username)
+
+
+class Likes(db.Model): 
+    __tablename__= 'Likes' 
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('Users.id', ondelete='CASCADE'))
+    post_id = db.Column(db.Integer, db.ForeignKey('Posts.id', ondelete='CASCADE'))
+    
+    def __init__(self, user_id, post_id):
+        self.user_id = user_id
+        self.post_id = post_id
+
+
+class Follows(db.Model): 
+    __tablename__= 'Follows'  
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('Users.id', ondelete='CASCADE'), nullable=False)
+    follower_id = db.Column(db.Integer, nullable=False) 
