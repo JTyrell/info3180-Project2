@@ -33,9 +33,9 @@ class PostsForm(FlaskForm):
     submit = SubmitField("Submit")
 
 
-class LikeForm(FlaskForm):
+class LikesForm(FlaskForm):
     user_id = StringField('Post ID', validators=[DataRequired()])
 
 
-class FollowForm(FlaskForm):
+class FollowsForm(FlaskForm):
     follower_id = StringField('Follower ID', validators=[DataRequired()])

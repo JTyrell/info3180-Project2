@@ -12,7 +12,8 @@ from flask import render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.utils import secure_filename
 from werkzeug.security import check_password_hash
-import jwt
+from app.forms import RegisterForm, LoginForm, PostsForm, LikesForm, FollowsForm
+from app.models import Posts, Users, Likes, Follows
 
 #Decorator functions for JWT Authentication
 def requires_auth(f):
@@ -52,7 +53,7 @@ def requires_auth(f):
 #Api to accepts user information and saves it to the database
 @app.route("/api/users/register", methods=["POST"])
 def register():
-    form = RegistrationForm()
+    form = RegisterForm()
     if form.validate_on_submit():
 
         username = form.username.data
@@ -62,7 +63,7 @@ def register():
         email = form.email.data
         location = form.location.data
         bio = form.biography.data
-        photo = form.photo.data
+        photo = form.profile_photo.data
 
         filename = secure_filename(photo.filename)
         photo.save(os.path.join(
@@ -71,22 +72,22 @@ def register():
         
         try:
             #create and add user object to database
-            user = Users(username, password, firstname, lastname, email, location, bio, photo)
-            if user is not None:
-                db.session.add(user)
-                db.session.commit()
-            
-                #flash success message 
-                response = "User registered sucessfully"
-                return jsonify(message=response), 201
+            user = Users(username, password, firstname, lastname, email, location, bio, filename)
+
+            db.session.add(user)
+            db.session.commit()
+        
+            #flash success message 
+            response = "User registration was sucessful"
+            return jsonify(message=response), 201
                 
         except Exception as e:
             print(e)
             response = "An error as occured."
             return jsonify(error=response), 400
     
-    #flash message for failure
-    response = "Error: Invalid or missing user information"
+    #flash message for form error
+    response = form_errors(form) 
     return jsonify(error=response), 400
 
 
@@ -106,22 +107,18 @@ def login():
             login_user(user)
 
             #creates bearer token 
-            jwt_token = jwt.encode({'user': user.username}, app.config['SECRET_KEY'], algorithm = 'HS256').decode('utf-8')
+            jwt_token = jwt.encode({'id':user.id, 'user': user.username}, app.config['SECRET_KEY'], algorithm = 'HS256').decode('utf-8')
 
             #Flash message for a successful login
             response = "Your login was successful"
-            return jsonify(message=response, token=jwt_token, user_id=user.id)
+            return jsonify(message=response, token=jwt_token), 200
         else:
             #Flash message for a failed login
-            response = "Incorrect password"
+            response = "Incorrect username and password combination"
             return jsonify(error=response), 400
-
-        #Flash message for a failed login
-        response = "Incorrect username"
-        return jsonify(error=response), 400
        
     #Flash message to indicate a failed login
-    response = "Failed to login"
+    response = form_errors(form)
     return jsonify(error=response)
 
 
@@ -142,51 +139,58 @@ def logout():
 @requires_auth
 def handlePosts(user_id):
     form = PostsForm()
-    if request.method == "POST" and form.validate_on_submit():
-        caption = form.caption.data
-        photo = form.photo.data
-        filename = photo.filename
-        photo.save(os.path.join(
-            app.config['UPLOAD_FOLDER'], filename
-        ))
-        post = Posts(photo, caption, user_id)
+    if request.method == "POST":
+        if form.validate_on_submit():
+            caption = form.caption.data
+            photo = form.photo.data
+            filename = photo.filename
+            photo.save(os.path.join(
+                app.config['UPLOAD_FOLDER'], filename
+            ))
+            post = Posts(user_id, filename, caption)
 
-        try:
-            
-            db.session.add(post)
-            db.session.commit()
-            
-            #Flash message for a successfully added post
-            response = "A new post was added successfully"
-            return jsonify(message=response), 201
-        except Exception as e:
-            print(e)
-            
-            response = "Internal server error"
-            return jsonify(error=response), 401
+            try:
+                
+                db.session.add(post)
+                db.session.commit()
+                
+                #Flash message for a successfully added post
+                response = "A new post was added successfully"
+                return jsonify(message=response), 201
+            except Exception as e:
+                print(e)
+                
+                response = "An error as occurred"
+                return jsonify(error=response), 401
+
+        response = form_errors(form)
+        return jsonify(error=response)
         
-    elif request.method == "GET" and form.validate_on_submit():
-        try:
-            #Retrieve the user's posts
-            posts = db.session.query(Posts).filter_by(user_id=user_id).all()
-            
-            allPosts = []
-            for post in posts:
-                post_detail = {"id": post.id, 
-                                "user_id": post.user_id, 
-                                "photo": os.path.join(app.config['RETRIEVED_FILE'], post.photo), 
-                                "caption": post.caption}
-                posts.append(post_detail)
-            
-            return jsonify(posts=allPosts)
-        except Exception as e:
-            print(e)
-            
-            response = "Internal server error"
-            return jsonify(error=response), 401
+    if request.method == "GET":
+        if form.validate_on_submit():
+            try:
+                #Retrieve the user's posts
+                posts = db.session.query(Posts).filter_by(user_id=user_id).all()
+                
+                allPosts = []
+                for post in posts:
+                    post_detail = {"id": post.id, 
+                                    "user_id": post.user_id, 
+                                    "photo": post.photo, 
+                                    "caption": post.caption}
+                    allPosts.append(post_detail)
+                
+                return jsonify(posts=allPosts)
+            except Exception as e:
+                print(e)
+                response = "An error has occurred"
+                return jsonify(error=response), 401
+
+        response = form_errors(form)
+        return jsonify(error=response), 400
             
     #Flash message for errors
-    response = "An error occured trying to display posts"
+    response = "An error occurred trying to display posts"
     return jsonify(error=response), 401
 
 
@@ -195,7 +199,7 @@ def handlePosts(user_id):
 @app.route("/api/users/<user_id>/follow", methods=["POST"])
 @requires_auth
 def follow(user_id):
-    form = followForm()
+    form = FollowsForm()
 
     if form.validate_on_submit:
         try:
@@ -206,14 +210,13 @@ def follow(user_id):
             
             #Flash message for a successfully following
             response = "You are now following this user"
-            return jsonify(message=response), 201
+            return jsonify(message=response), 200
 
         except Exception as e:
-            print(e)
-            
+            print(e) 
             #Flash message to indicate that an error occurred
-            response = "Internal error."
-            return jsonify(error=response), 401
+            response = "An error as occurred."
+            return jsonify(error=response), 400
 
 
 
@@ -222,21 +225,24 @@ def follow(user_id):
 @requires_auth
 def getPosts():
     try:
-        posts = []
+        
         allPosts = db.session.query(Posts).order_by(Posts.created_on.desc()).all()
-    
+        token = request.headers['Authorization'].split()[1]
+        user_id = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])['id']
+        
+        user = db.session.query(Users).filter_by(id=user_id).first()
+        likes = [like.post_id for like in user.likes]
+        posts = []
         for post in allPosts:
-
-            likes = [like.post_id for like in user.likes]
             isLiked = post.id in likes
             details = {"id": post.id, "user_id": post.user_id, "photo": post.photo, "caption": post.caption,  "likes": len(post.likes), "isLiked": isLiked, "created_on": post.created_on.strftime("%d %b %Y")}
             posts.append(details)
-        return jsonify(posts=posts), 201
+        return jsonify(posts=posts), 200
     except Exception as e:
         print(e)
         
-        response = "Sserver error"
-        return jsonify(error=response), 401
+        response = "An error occered"
+        return jsonify(error=response), 400
 
 
 
@@ -244,7 +250,7 @@ def getPosts():
 @app.route("/api/posts/<post_id>/like", methods=["POST"])
 @requires_auth
 def like(post_id):
-    form = likeForm()
+    form = LikesForm()
 
     if form.validate_on_submit():
     
@@ -255,14 +261,14 @@ def like(post_id):
             db.session.add(like)
             db.session.commit()
             response = "Post Liked!"
-            return jsonify(message=response, likes=len(post.likes)), 201
+            return jsonify(message=response, likes=len(post.likes)), 200
         except:
             response= "could not like post"
-            return jsonify(error=response)
+            return jsonify(error=response), 400
     
    
     response = "Failed to like the post, Something went wrong with the form"
-    return jsonify(error=response)
+    return jsonify(error=response), 400
 
 # Please create all new routes and view functions above this route.
 # This route is now our catch all route for our VueJS single page

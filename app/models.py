@@ -89,3 +89,7 @@ class Follows(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('Users.id', ondelete='CASCADE'), nullable=False)
     follower_id = db.Column(db.Integer, nullable=False) 
+
+    def __init__(self, user_id, follower_id):
+        self.user_id = user_id
+        self.follower_id = follower_id
