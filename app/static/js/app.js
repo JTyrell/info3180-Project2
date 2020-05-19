@@ -130,15 +130,15 @@ const Register= Vue.component('register', {template:
         <form id= "CreateUser"  @submit.prevent="Regist"   method="POST" enctype="multipart/form-data">
             <div class="form-group">
               <label for="fName">First Name:</label>
-              <input type="text" class="form-group form-control" name="fName">
+              <input type="text" class="form-group form-control" name="firstname">
             </div>
             <div class="form-group">
               <label for="lName"word>Last Name:</label>
-              <input type="text" class="form-group form-control" name="lName">
+              <input type="text" class="form-group form-control" name="lastname" >
             </div>
             <div class="form-group">
               <label for="userName">Username:</label>
-              <input type="text" class="form-group form-control" name="userName">
+              <input type="text" class="form-group form-control" name="username">
             </div>
             <div class="form-group">
               <label for="email">Email:</label>
@@ -146,7 +146,7 @@ const Register= Vue.component('register', {template:
             </div>
             <div class="form-group">
               <label for="bio">Biography:</label>
-              <input type="textarea" class="form-group form-control" name="bio">
+              <input type="textarea" class="form-group form-control" name="biography">
             </div>
             <div class="form-group">
               <label for="location">Location:</label>
@@ -157,7 +157,7 @@ const Register= Vue.component('register', {template:
             </div>
             <div class="upload-btn-wrapper">
                 <button id="btn">Browse</button>
-                <input type="file" name="imgfile" />
+                <input type="file" name="profile_photo"/>
             </div>
           
             
@@ -179,12 +179,29 @@ const Register= Vue.component('register', {template:
     data : function(){
         return {
             response:[],
-            error:[]
+            error:[],
+            user: {}
         };
     },
     methods : {
         Regist : function(){
-            
+            let self = this;
+            let newUser = document.getElementById('CreateUser');
+            let form_data = new FormData(newUser);
+            fetch("/api/users/register",{
+                method: 'post',
+                body: form_data,
+                headers: {
+                    'X-CSRFToken': token
+                },
+                credentials: 'same-origin'
+            }).then(function (jsonResponse) {
+                // display a success message
+                console.log(jsonResponse);
+                })
+                .catch(function (error) {
+                console.log(error);
+                });
             }
                 
     }

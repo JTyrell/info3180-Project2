@@ -55,7 +55,6 @@ def requires_auth(f):
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
-
         username = form.username.data
         password = form.password.data
         firstname = form.firstname.data
