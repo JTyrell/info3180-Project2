@@ -275,8 +275,9 @@ def like(post_id):
 
 
 @app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def index(path):
+@app.route('/')
+def index():
+    form = RegisterForm()
     """
     Because we use HTML5 history mode in vue-router we need to configure our
     web server to redirect all routes to index.html. Hence the additional route
@@ -284,7 +285,7 @@ def index(path):
 
     Also we will render the initial webpage and then let VueJS take control.
     """
-    return app.send_static_file('index.html')
+    return render_template('index.html', form=form)
 
 
 # user_loader callback. This callback is used to reload the user object from
