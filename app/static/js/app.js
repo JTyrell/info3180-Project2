@@ -180,7 +180,9 @@ const Register= Vue.component('register', {template:
         return {
             response:[],
             error:[],
-            user: {}
+            user: {
+
+            }
         };
     },
     methods : {
