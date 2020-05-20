@@ -264,10 +264,46 @@ def like(post_id):
         except:
             response= "could not like post"
             return jsonify(error=response), 400
-    
+
    
     response = "Failed to like the post, Something went wrong with the form"
     return jsonify(error=response), 400
+
+
+
+@app.route('/api/users/<user_id>', methods=['GET'])
+@login_required
+def get_user_details(user_id):
+    
+    token = request.headers['Authorization'].split()[1]
+    current_user = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])['id']
+
+    try:
+        user = db.session.query(Users).filter_by(id=user_id).first()
+
+        isFollowing = current_user in [follower.follower_id for follower in user.followers]
+
+        allposts = []
+        for post in user.posts:
+            post = {'id': post.id , 'user_id': post.user_id, 
+                    'photo': post.photo, 'caption': post.caption,
+                    'likesCount': len(post.likes), 'created_on': post.created_on}
+            allposts.append(post)
+            
+        userDetails = {'id': user.id, 'username': user.username, 
+                    'firstname': user.firstname, 'lastname': user.lastname, 
+                    'email': user.email, 'location': user.location, 
+                    'biography': user.biography, 'profile_photo': user.profile_photo, 
+                    'joined_on': user.joined_on.strftime('%B %Y'), 
+                    'postsCount': len(allposts), 'followerCount': len(user.followers), 
+                    'isFollowing': isFollowing,'posts': allposts}
+        return jsonify(user=userDetails), 200
+    except Exception as e:
+        print(e)
+        error = "An error occurred while trying to retrieve user data"
+        return jsonify(error=error), 401
+                
+    
 
 # Please create all new routes and view functions above this route.
 # This route is now our catch all route for our VueJS single page
