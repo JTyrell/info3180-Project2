@@ -5,7 +5,7 @@ Vue.component('app-header', {
         <link href="https://fonts.googleapis.com/css?family=Lobster" rel="stylesheet"> 
         <link rel="stylesheet" type="text/css" href="static/css/next.css">
             <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
-                <a class="navbar-brand" href="#">Photogram</a>
+                <a class="navbar-brand" href="#"><i class="fas fa-camera-retro"></i> Photogram</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -13,16 +13,16 @@ Vue.component('app-header', {
                 
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item active">
-                        <a class="nav-link " href="/"><strong>Home</strong> <span class="sr-only">(current)</span></a>
+                        <router-link to="/" class="nav-link"><strong>Home</strong> <span class="sr-only">(current)</span></router-link>
                     </li>
                     <li class="nav-item active">
-                        <a class="nav-link" href="/explore"><strong>Explore</strong></a>
+                        <router-link to="explore" class="nav-link"><strong>Explore</strong></router-link>
                     </li>
                     <li class="nav-item active">
-                        <a class="nav-link" href="#"><strong>My Profile</strong></a>
+                        <router-link to="" class="nav-link" ><strong>My Profile</strong></router-link>
                     </li>
                     <li class="nav-item active">
-                        <a class="nav-link" href="#"><strong>logout</strong></a>
+                        <router-link to="api/auth/logout" class="nav-link" ><strong>logout</strong></router-link>
                     </li>
                 </ul>
             </div>
@@ -72,7 +72,7 @@ const Home = Vue.component('home', {
         <img class="card-img-top" src="https://www.planetware.com/photos-large/JAM/jamaica-seven-mile-beach.jpg" alt="Card image cap">
         </div> 
         <div class="card">
-            <h3 class="card-title text-center mt-3 mb-0">Photogram</h3>
+            <h3 class="card-title text-center mt-3 mb-0"><i class="fas fa-camera-retro" size="7"></i> Photogram</h3>
             <hr class="ml-5 mr-5">
             <p class="card-body"> {{message}} </p>
             <div class="row">
@@ -257,71 +257,63 @@ const Login = Vue.component('login', {
  
 });
 
-const Explore = Vue.component('explore', {
-    template:`
-    <div>sdasd
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-        <div v-if="messageFlag" class="sidenav">
-            <router-link class="btn btn-primary but" to="/post/new">New Post</router-link>
+const postCard = Vue.component('postCard' ,{
+    template: `
+    <div class="card">
+        <h4 class="card-title">yoyoyo</h4>
+        <img src="https://www.planetware.com/photos-large/JAM/jamaica-seven-mile-beach.jpg" alt="Card image cap">
+        <div class="card-body">
+            <p>lorem</p>
+            <div class="row pb-0">
+                <p class="card-text text-left col"><i class="fas fa-heart"></i></p>
+                <p class="text-right col">asdasd</p>
+            </div> 
         </div>
-       
-        <div class=" container-fluid fix-explore" v-if="output">
-            <li v-for="resp in output "class="list" style = "list-style:none;" >
-                <div id="wrap">
-					<section class="main items">
-    					<div class="boxout">
-                            <p><img v-bind:src= "'/static/uploads/'+resp.proPhoto"style="width: 2rem; height: 2rem; padding: 3px; border-radius:100px;"/><router-link v-bind:to="'/users/' +resp.user_id">{{resp.username}}</router-link></p>
-    						<article class="sub">
-    							<header>
-    								<img v-bind:src= "'/static/uploads/'+resp.photo" style="width: 32.9rem; height: 20rem;"/>
-    							</header>
-    							<p class="cap"><strong style="color:black;">{{resp.username}}:</strong> {{resp.caption}}</p>
-    						</article>
-    						<section class="like liker">
-    						    <div v-if="resp.heart">
-        						    <a  v-on:click="likes(resp.postid)" v-bind:value= "resp.postid"> <i  class="fa fa-heart" style="font-size:24px;color:red"></i></a>
-                                    <a >{{resp.likes}} Likes</a>
-                                    <a class="likey dark nohover" href="#"><span class="codeine core">{{resp.created_on}}</span></a>
-                                </div>
-                                <div v-else>
-                                    <a  v-on:click="likes(resp.postid)"> <i class="fa fa-heart" style="font-size:24px;color:red"></i></a>
-                                    <a >{{resp.likes}} Likes</a>
-                                    <a class="likey dark nohover" href="#"><span class="codeine core">{{resp.created_on}}</span></a>
-                                
-                                </div>
-                            </section>
-    					</div>
-					</section>
-			     </div>
-            </li>
-        </div>
-        <div v-else>
-            <li v-for="resp in output"class="list">
-                <h5>No Posts</h5>
-            </li>
-        </div> 
     </div>
-`,
-    created: function() {
-        
-        }, 
-    data: function() {
-        
-    },
+    `,
+    props:['user','post']
+});
 
+const Explore = Vue.component('explore', {
+    template: `
+        <div class="row">
+          <div class="col-9">
+             <div v-for="post in posts" key="post.id">
+                <postcard :post="post"></postcard>
+             </div>
+          </div>
+          <div class="col-3">
+          <router-link to="post/new" class="btn btn-primary px-5" >Add Post</router-link>
+          </div>
+        </div>
+    `,
+    created: function() {
+        let self = this;
+        fetch('/api/posts')
+        .then(function(response) {return response.json();})
+        .then(data => console.log(data))
+        // .then(function(data) {self.articles = data.articles});
+        } ,
+    
+    component: {
+        'postcard' : postCard
+    },
+    data: function() {
+       return {
+           posts: [],
+           error: []
+       };
+    },
     methods: {
+        Addpost: function (){}
         
-    likes: function(postid){
-        }
-  
-    }
-        
+}
 });
 
 const uploadpost= Vue.component('upload-form', {
     template: `
         <div>
-          <div id ="tall1"><p>New Post </p></div>
+          <div id ="tall1"><p class="text-center">New Post </p></div>
           <div>
             <ul class="list">
                 <li v-for="resp in response" class="list alert alert-success">
@@ -332,7 +324,8 @@ const uploadpost= Vue.component('upload-form', {
                     {{ resp.errors[1] }}
                 </li>
             </ul>
-
+            <div class="card container" style="width: 18rem">
+           
             <form id="uploadForm"  @submit.prevent="uploadPhoto" method="POST" enctype="multipart/form-data">
                 <div id ="tall">
                     
@@ -354,7 +347,8 @@ const uploadpost= Vue.component('upload-form', {
                 </div>
                 <br/>
                 
-            </form>
+            </form>            
+            </div>
           </div>
           </br>
         </div>

@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_login import LoginManager
+from flask_fontawesome import FontAwesome
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
 
@@ -12,6 +13,7 @@ app.config['RETRIEVED_FILE'] = './app/static/uploads'
 
 db = SQLAlchemy(app)
 csrf = CSRFProtect(app)
+fa = FontAwesome(app)
 
 #flask login manager
 login_manager = LoginManager()

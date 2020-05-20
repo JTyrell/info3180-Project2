@@ -3,6 +3,7 @@ Flask==1.1.2
 Flask-WTF==0.14.3
 Flask-SQLAlchemy
 Flask-Migrate
+flask_fontawesome
 Flask-Script
 Flask-Login
 Flask-Bcrypt
