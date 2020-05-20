@@ -1,37 +1,32 @@
 /* Add your Application JavaScript */
 Vue.component('app-header', {
     template: `
-     <div>
-    <link href="https://fonts.googleapis.com/css?family=Lobster" rel="stylesheet"> 
-    <link rel="stylesheet" type="text/css" href="static/css/next.css">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-      <a class="navbar-brand" href="#" id = "gram"><img class="icon" :src="'/static/css/cam.jpg'">Photogram</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-    
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav mr-auto"  v-if="user">
-          <li class="nav-item active">
-            <router-link class="nav-link" to="/" >Home <span class="sr-only">(current)</span></router-link>
-          </li>
-        
-          <li class="nav-item active" >
-            <router-link class="nav-link" to= "/explore"> Explore <span class="sr-only">(current)</span></router-link>
-          </li>
-          <li class="nav-item active" >
-            <router-link class="nav-link"  v-bind:to="'/users/'+ userid""> My Profile <span class="sr-only">(current)</span></router-link>
-          </li>
-        </ul>
-        <ul class="navbar-nav" v-if="user">
-            <li class="nav-item active">
-              <router-link class="nav-link" to="/logout/">Logout <span class="sr-only">(current)</span></router-link>
-            </li>  
-        </ul>
- 
-        
-      </div>
-    </nav>
+    <div>
+        <link href="https://fonts.googleapis.com/css?family=Lobster" rel="stylesheet"> 
+        <link rel="stylesheet" type="text/css" href="static/css/next.css">
+            <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+                <a class="navbar-brand" href="#">Photogram</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link " href="/"><strong>Home</strong> <span class="sr-only">(current)</span></a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" href="/explore"><strong>Explore</strong></a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#"><strong>My Profile</strong></a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#"><strong>logout</strong></a>
+                    </li>
+                </ul>
+            </div>
+            </nav>
     </div>
     `,
     watch: {
@@ -72,36 +67,26 @@ Vue.component('app-footer', {
 const Home = Vue.component('home', {
    template:
    `
-    <div class= "ali">
-    <link href="https://fonts.googleapis.com/css?family=Lobster" rel="stylesheet"> 
-    <link rel="stylesheet" type="text/css" href="static/css/main.css">
-    <br>
-    <br>
-   
-        <div class = "whole" id="new" >
-        
-            <img class="homeimg" :src="'/static/css/home.jpg'">
+    <div class= "card-group mt-4"> 
+        <div class="card mr-3">
+        <img class="card-img-top" src="https://www.planetware.com/photos-large/JAM/jamaica-seven-mile-beach.jpg" alt="Card image cap">
+        </div> 
+        <div class="card">
+            <h3 class="card-title text-center mt-3 mb-0">Photogram</h3>
+            <hr class="ml-5 mr-5">
+            <p class="card-body"> {{message}} </p>
+            <div class="row">
+                <router-link to="register"  class=" btn btn-success col ml-3 mr-2">Register</router-link>
+                <router-link to="login"  class="btn btn-primary col mr-3 ml-2">Login</router-link>
+            </div>  
         </div>
         
-        <div id="gallery" class ="whole">
-            <h1 id= "gram1"><img class="homeicon" :src="'/static/css/cam.jpg'"> Photogram</h1>
-            <hr>
-            <p> Share photos of your favourite moments with friends family and the world</p>
-            <br>
-
-            
-            <div id= "whole2" >
-                <router-link to="register"  class=" btn btn-success">Register</router-link>
-                
-                <router-link to="login"  class="btn btn-primary">Login</router-link>
-            </div>
-        </div>
-        
-    
     </div>
    `,
     data: function() {
-       return {}
+       return {
+           message:"Share photos of your favourite moment with friends,family and the world"
+       }
     }
 });
 
@@ -125,10 +110,11 @@ const Register= Vue.component('register', {template:
             </li>
         </ul>
 
-        <h1> Register </h1>
-
+        <h1 class="text-center"> Register </h1>
+        
         <form id= "CreateUser"  @submit.prevent="Regist"   method="POST" enctype="multipart/form-data">
-            <div class="form-group">
+        <div class="card container" style="width: 18rem;">
+            <div class="form-group mt-3">
               <label for="fName">First Name:</label>
               <input type="text" class="form-group form-control" name="firstname">
             </div>
@@ -171,8 +157,11 @@ const Register= Vue.component('register', {template:
               <label for="confirm">Confirm Password:</label>
               <input type="password" class="form-group form-control" name ="confirm">
             </div>
-            <button class=" btn upload-btn bg-primary" type="submit">Submit</button>
+            <button class=" btn upload-btn bg-success" type="submit">Submit</button>
+        </div>
         </form>
+        
+        
     </div>
     `
  ,
@@ -220,20 +209,22 @@ const Login = Vue.component('login', {
                 
             </li>
         </ul>
-   
+
    
        <form id = "LoginForm" class="form-login" @submit.prevent="Log" method="post">
-            <h2>Login</h2>
-          
-            <div class="form-group">
-                <label for="username" class="sr-only">Username</label>
-                <input type="text" id="username" name="username" class="form-group form-control" placeholder="Your username" required >
+            <h2 class="text-center">Login</h2>
+            <div class="card container" style="width: 18rem;">
+                <div class="form-group mt-3">
+                    <label for="username" class="sr-only">Username</label>
+                    <input type="text" id="username" name="username" class="form-group form-control" placeholder="Your username" required >
+                </div>
+                <div class="form-group">
+                    <label for="password" class="sr-only">Password</label>
+                    <input type="password" id="password" name="password" class="form-group form-control" placeholder="Password" required>
+                </div>
+                <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
             </div>
-            <div class="form-group">
-                <label for="password" class="sr-only">Password</label>
-                <input type="password" id="password" name="password" class="form-group form-control" placeholder="Password" required>
-            </div>
-          <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+            
         </form>
     </div>
    `,
@@ -266,13 +257,9 @@ const Login = Vue.component('login', {
  
 });
 
-
-
-
-
-const Explore = Vue.component('explore', {template:`
-
-    <div>
+const Explore = Vue.component('explore', {
+    template:`
+    <div>sdasd
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <div v-if="messageFlag" class="sidenav">
             <router-link class="btn btn-primary but" to="/post/new">New Post</router-link>
@@ -312,7 +299,7 @@ const Explore = Vue.component('explore', {template:`
             <li v-for="resp in output"class="list">
                 <h5>No Posts</h5>
             </li>
-        </div>
+        </div> 
     </div>
 `,
     created: function() {
@@ -476,7 +463,7 @@ const logout= Vue.component('logout-form', {
 // Define Routes
 const router = new VueRouter({
     routes: [
-        { path: "/", component: Home },
+        {path: "/", component: Home },
         {path: "/register", component:Register},
         {path: "/login", component:Login},
         {path:"/explore", component:Explore}, //this suppose to work with, getpost, handlepost and like/likes, was thinking of making this all in one
