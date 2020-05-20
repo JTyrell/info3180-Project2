@@ -244,8 +244,23 @@ const Login = Vue.component('login', {
         }
     },
     methods : {
-        Login : function(){
-               
+        Log : function(){
+        let user = document.getElementById('LoginForm');
+        let form_data = new FormData(user);
+        fetch("/api/auth/login",{
+            method: 'post',
+            body: form_data,
+            headers: {
+                'X-CSRFToken': token
+            },
+            credentials: 'same-origin'
+        }).then(function (jsonResponse) {
+            // display a success message
+            console.log(jsonResponse);
+            })
+            .catch(function (error) {
+            console.log(error);
+            });      
     }
 }
  
