@@ -184,64 +184,78 @@ const Register= Vue.component('register', {
 
 
 const Login = Vue.component('login', {
-   template: `
-   <div class= "paper2" >
-   <link rel="stylesheet" type="text/css" href="static/css/next.css">
-        <ul class="list">
-            <li v-for="resp in errors" class="list alert alert-danger">
-                {{ resp }} <br>
-                
+   template: 
+   `
+   <div class="justify-content-center align-items-center">
+        <h1>Login</h1>
+        
+        <ul class="justify-content-center align-items-center">
+            <li v-for="err in error" class="alert alert-danger" role="alert">
+                {{ err }}
             </li>
         </ul>
-
-   
-       <form id = "LoginForm" class="form-login" @submit.prevent="Log" method="post">
-            <h2 class="text-center">Login</h2>
-            <div class="card container" style="width: 18rem;">
-                <div class="form-group mt-3">
-                    <label for="username" class="sr-only">Username</label>
-                    <input type="text" id="username" name="username" class="form-group form-control" placeholder="Your username" required >
-                </div>
+        
+        <div v-if="response" class="alert alert-success">
+            {{ response }}
+        </div>
+        
+        <div class="shadow-sm bg-white">
+            <form id="login-form" @submit.prevent='login' enctype='multipart/form-data' novalidate>
                 <div class="form-group">
-                    <label for="password" class="sr-only">Password</label>
-                    <input type="password" id="password" name="password" class="form-group form-control" placeholder="Password" required>
+                    <label for="username">Username</label>
+                    <input type="text" class="form-control" id="username" name="username">
                 </div>
-                <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
-            </div>
-            
-        </form>
+                <div class="form-group mb-4">
+                    <label for="password">Password</label>
+                    <input type="password" class="form-control" id="password" name="password">
+                </div>
+                
+                <button type='submit' class='btn btn-sm btn-green'>Sign in</button>
+            </form>
+        </div>
     </div>
-   `,
-      data : function(){
-        return {
-            errors:[],
-            response:[]
+    `,
+    props: ['response'],
+    methods: {
+        login: function() {
+            
+            let loginForm = document.getElementById('login-form');
+            let formData = new FormData(loginForm);
+            let self = this;
+            
+            fetch('/api/auth/login', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': token
+                },
+                credentials: 'same-origin'
+            })
+            .then(resp => resp.json())
+            .then(function(jsonResp) {
+                
+                self.message = jsonResp.message;
+                self.error = jsonResp.error;
+                
+                if (self.message) {
+                    let jwt_token = jsonResp.token
+                    localStorage.setItem('token', jwt_token);
+                    router.push({path: '/explore'})
+                } else {
+                    console.log(self.error);
+                }
+            })
+            .catch(function(error) {
+                console.log(error)
+            })
         }
     },
-    methods : {
-        Log : function(){
-        let user = document.getElementById('LoginForm');
-        let form_data = new FormData(user);
-        fetch("/api/auth/login",{
-            method: 'post',
-            body: form_data,
-            headers: {
-                'X-CSRFToken': token
-            },
-            credentials: 'same-origin'
-        }).then(function (jsonResponse) {
-            // display a success message
-            return jsonResponse.json();
-            }).then(res => {
-                localStorage.setItem('token' , res.token)
-                router.push({path: '/explore'})
-                console.log(res)
-            })
-            .catch(function (error) {
-            console.log(error);
-            });      
-    }
-}
+    data: function() {
+        return {
+            message: '',
+            error: []
+        }
+    },
  
 });
 
