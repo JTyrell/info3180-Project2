@@ -68,17 +68,20 @@ const Home = Vue.component('home', {
    template:
    `
     <div class= "card-group mt-4"> 
-        <div class="card mr-3">
-        <img class="card-img-top" src="https://www.planetware.com/photos-large/JAM/jamaica-seven-mile-beach.jpg" alt="Card image cap">
-        </div> 
-        <div class="card">
-            <h3 class="card-title text-center mt-3 mb-0"><i class="fas fa-camera-retro" size="7"></i> Photogram</h3>
-            <hr class="ml-5 mr-5">
-            <p class="card-body"> {{message}} </p>
-            <div class="row">
-                <router-link to="register"  class=" btn btn-success col ml-3 mr-2">Register</router-link>
-                <router-link to="login"  class="btn btn-primary col mr-3 ml-2">Login</router-link>
-            </div>  
+        <div v-if="response" class="alert alert-success alert-dismissible show fade">{{ response }}</div>
+        <div>
+            <div class="card mr-3">
+            <img class="card-img-top" src="https://www.planetware.com/photos-large/JAM/jamaica-seven-mile-beach.jpg" alt="Card image cap">
+            </div> 
+            <div class="card">
+                <h3 class="card-title text-center mt-3 mb-0"><i class="fas fa-camera-retro" size="7"></i> Photogram</h3>
+                <hr class="ml-5 mr-5">
+                <p class="card-body"> {{message}} </p>
+                <div class="row">
+                    <router-link to="register"  class=" btn btn-success col ml-3 mr-2">Register</router-link>
+                    <router-link to="login"  class="btn btn-primary col mr-3 ml-2">Login</router-link>
+                </div>  
+            </div>
         </div>
         
     </div>
@@ -508,14 +511,38 @@ const UserProfile = Vue.component('userprofile', {
    }
 });
 
-const Logout= Vue.component('logout', {
+const Logout = Vue.component('logout', {
     template: `<div></div>`,
-    created: function() {
+    created: function () {
+        let self = this;
         
+        fetch('/api/auth/logout', {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': token,
+                'Authorization': 'Bearer ' + localStorage.getItem('token')
+            },
+            credentials: 'same-origin'
+        })
+        .then(resp => resp.json())
+        .then(function(jsonResp) {
+            
+            self.message = jsonResp.message;
+            self.error = jsonResp.error;
+            
+            if (self.message) {
+                localStorage.removeItem('token');
+                router.push({name: 'home', params: {response: self.message}})
+            } else {
+                router.push({name: 'home'})
+            }
+        })
+        .catch(function(error) {
+            console.log(error)
+        })
     },
-    methods: {
-    }
 });
+
 
 const NotFound = Vue.component('not-found', {
     template: `
@@ -526,7 +553,7 @@ const NotFound = Vue.component('not-found', {
     data: function () {
         return {}
     }
-})
+});
 
 // Define Routes
 const router = new VueRouter({
