@@ -282,7 +282,7 @@ const postCard = Vue.component('postCard' ,{
 const Explore = Vue.component('explore', {
     template: `
     <div class="row">
-          <div class="col-6">
+          <div class="col-6 mb-3">
              <div v-for="post in posts" key="post.id">
              <div class="card">
              <h4 class="card-title">yoyoyo</h4>
