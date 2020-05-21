@@ -41,7 +41,7 @@ def requires_auth(f):
     except jwt.DecodeError:
         return jsonify({'code': 'token_invalid_signature', 'description': 'Token signature is invalid'}), 401
 
-    g.current_user = user = payload
+    current_user = user = payload
     return f(*args, **kwargs)
 
   return decorated

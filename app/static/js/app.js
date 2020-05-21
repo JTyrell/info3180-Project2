@@ -231,7 +231,11 @@ const Login = Vue.component('login', {
             credentials: 'same-origin'
         }).then(function (jsonResponse) {
             // display a success message
-            console.log(jsonResponse);
+            return jsonResponse.json();
+            }).then(res => {
+                localStorage.setItem('token' , res.token)
+                router.push({path: '/explore'})
+                console.log(res)
             })
             .catch(function (error) {
             console.log(error);
@@ -243,41 +247,69 @@ const Login = Vue.component('login', {
 
 const postCard = Vue.component('postCard' ,{
     template: `
-    <div class="card">
-        <h4 class="card-title">yoyoyo</h4>
-        <img src="https://www.planetware.com/photos-large/JAM/jamaica-seven-mile-beach.jpg" alt="Card image cap">
-        <div class="card-body">
-            <p>lorem</p>
-            <div class="row pb-0">
-                <p class="card-text text-left col"><i class="fas fa-heart"></i></p>
-                <p class="text-right col">asdasd</p>
-            </div> 
-        </div>
+<div class="card">
+    <h4 class="card-title">yoyoyo</h4>
+    <img :src="'static/uploads/' + post.photo" style="height: 400px; width: 500px;" class="img-fluid">
+    <div class="card-body">
+        <p>{{ post.caption }}</p>
+        <div class="row pb-0">
+            <p class="card-text text-left col"><i class="fas fa-heart"></i></p>
+            <p class="text-right col">asdasd</p>
+        </div> 
     </div>
+</div>
     `,
     props:['user','post']
 });
 
 const Explore = Vue.component('explore', {
     template: `
-        <div class="row">
-          <div class="col-9">
+    <div class="row">
+          <div class="col-6">
              <div v-for="post in posts" key="post.id">
-                <postcard :post="post"></postcard>
+             <div class="card">
+             <h4 class="card-title">yoyoyo</h4>
+             <img :src="'static/uploads/' + post.photo" style="height: 400px;" alt="Card image cap">
+             <div class="card-body">
+                 <p>{{ post.caption }}</p>
+                 <div class="row pb-0">
+                     <p class="card-text text-left col"><i class="fas fa-heart"></i></p>
+                     <p class="text-right col">asdasd</p>
+                 </div> 
+             </div>
+         </div> 
              </div>
           </div>
           <div class="col-3">
-          <router-link to="post/new" class="btn btn-primary px-5" >Add Post</router-link>
+          <router-link to="/posts/new" class="btn btn-primary px-5" >Add Post</router-link>
           </div>
-        </div>
+    </div>
     `,
     created: function() {
         let self = this;
-        fetch('/api/posts')
-        .then(function(response) {return response.json();})
-        .then(data => console.log(data))
-        // .then(function(data) {self.articles = data.articles});
-        } ,
+        
+        fetch('/api/posts', {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': token,
+                'Authorization': 'Bearer ' + localStorage.getItem('token')
+            },
+            credentials: 'same-origin'
+        })
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            console.log(data.posts)
+            self.posts = data.posts;
+            if(data.code) {
+                router.push({path: '/', params: {notification: 'You need to be logged in to view this page.'}})
+            }
+        })
+        .catch(function(error) {
+            console.log(error)
+        })  
+    } ,
     
     component: {
         'postcard' : postCard
@@ -294,7 +326,7 @@ const Explore = Vue.component('explore', {
 }
 });
 
-const Newpost= Vue.component('newpost', {
+const Newpost = Vue.component('newpost', {
     template: `
         <div>
           <div id ="tall1"><p class="text-center">New Post </p></div>
@@ -344,7 +376,40 @@ const Newpost= Vue.component('newpost', {
        };
     },
     methods: {
+        parsejwt: function(token){
+            var base64Url = token.split('.')[1];
+            var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            var jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
         
+            return JSON.parse(jsonPayload);
+        },
+        uploadPhoto: function() {
+            let user = document.getElementById('uploadForm');
+            let form_data = new FormData(user);
+            let jwt = localStorage.getItem('token');
+            console.log(this.parsejwt(jwt))
+            fetch("/api/users/"+this.parsejwt(jwt).id+"/posts",{
+                method: 'post',
+                body: form_data,
+                headers: {
+                    'X-CSRFToken': token,
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                credentials: 'same-origin'
+            }).then(function (jsonResponse) {
+                // display a success message
+                return jsonResponse.json();
+                }).then(res => {
+                    localStorage.setItem('token' , res.token)
+                    router.push({path: '/explore'})
+                    console.log(res)
+                })
+                .catch(function (error) {
+                console.log(error);
+                });
+        } 
 }
 });
 
@@ -458,7 +523,7 @@ const router = new VueRouter({
         {path: "/login", name: "login", component: Login, props: true},
         {path: "/logout", name: "logout", component: Logout},
         {path: "/explore", name: "explore", path: "/explore", component: Explore, props: true},
-        {path: "/posts/new", name: "newpost", component: NewPost},
+        {path: "/posts/new", name: "newpost", component: Newpost},
         {path: "/users/:user_id", name: "userprofile", component: UserProfile},
         // This is a catch all route in case none of the above matches
         {path: "*", component: NotFound}
