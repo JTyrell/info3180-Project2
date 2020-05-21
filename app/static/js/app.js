@@ -90,112 +90,96 @@ const Home = Vue.component('home', {
     }
 });
 
-const Register= Vue.component('register', {template:
-`  
-        
-    <div class= "paper">
-        <link rel="stylesheet" type="text/css" href="static/css/next.css">
-        <ul class="list">
-            <li v-for="resp in error" class="list alert alert-danger">
-                {{ resp.errors[0] }} <br>
-                {{ resp.errors[1] }}
-                {{ resp.errors[2] }} <br>
-                {{ resp.errors[3] }}
-                {{ resp.errors[4] }} <br>
-                {{ resp.errors[5] }}
-                {{ resp.errors[6] }} <br>
-                {{ resp.errors[7] }}
-                {{ resp.errors[8] }} <br>
-              
+const Register= Vue.component('register', {
+    template:
+    `      
+    <div class= 'container centered'>
+        <h1 class='page-header'>Register</h1>
+        <ul class="">
+            <li v-for="err in error" class="list alert alert-danger" role="alert">
+                {{ err }}
             </li>
         </ul>
-
-        <h1 class="text-center"> Register </h1>
         
-        <form id= "CreateUser"  @submit.prevent="Regist"   method="POST" enctype="multipart/form-data">
-        <div class="card container" style="width: 18rem;">
-            <div class="form-group mt-3">
-              <label for="fName">First Name:</label>
-              <input type="text" class="form-group form-control" name="firstname">
-            </div>
-            <div class="form-group">
-              <label for="lName"word>Last Name:</label>
-              <input type="text" class="form-group form-control" name="lastname" >
-            </div>
-            <div class="form-group">
-              <label for="userName">Username:</label>
-              <input type="text" class="form-group form-control" name="username">
-            </div>
-            <div class="form-group">
-              <label for="email">Email:</label>
-              <input type="text" class="form-group form-control" name="email">
-            </div>
-            <div class="form-group">
-              <label for="bio">Biography:</label>
-              <input type="textarea" class="form-group form-control" name="biography">
-            </div>
-            <div class="form-group">
-              <label for="location">Location:</label>
-              <input type="text" class="form-group form-control" name="location">
-            </div>
-            <div class="form-group">
-                <label for="msg"> Browse to Upload Photo </label>
-            </div>
-            <div class="upload-btn-wrapper">
-                <button id="btn">Browse</button>
-                <input type="file" name="profile_photo"/>
-            </div>
-          
+        <div>
+            <form id="register-form" @submit.prevent='register' enctype='multipart/form-data' novalidate>
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" class="form-control" id="username" name="username">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" class="form-control" id="password" name="password">
+                </div>
+                <div class="form-group">
+                    <label for="firstname">Firstname</label>
+                    <input type="text" class="form-control" id="firstname" name="firstname">
+                </div>
+                <div class="form-group">
+                    <label for="lastname">Lastname</label>
+                    <input type="text" class="form-control" id="lastname" name="lastname">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" class="form-control" id="email" name="email">
+                </div>
+                <div class="form-group">
+                    <label for="location">Location</label>
+                    <input type="text" class="form-control" id="location" name="location">
+                </div>
+                <div class="form-group">
+                    <label for="biography">Biography</label>
+                    <textarea id="biography" class="form-control" name="biography"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="photo">Photo</label>
+                    <input type="file" id="photo" class="form-control" name="profile_photo">
+                </div>
             
-            <br>
-            
-            <div class="form-group">
-              <label for="password">Password:</label>
-              <input type="password" class="form-group form-control" name="password">
-            </div>
-            <div class="form-group">
-              <label for="confirm">Confirm Password:</label>
-              <input type="password" class="form-group form-control" name ="confirm">
-            </div>
-            <button class=" btn upload-btn bg-success" type="submit">Submit</button>
+                <button type="submit" class="btn btn-primary">Register</button>
+            </form>
         </div>
-        </form>
-        
-        
     </div>
-    `
- ,
-    data : function(){
-        return {
-            response:[],
-            error:[],
-            user: {
-
-            }
-        };
-    },
-    methods : {
-        Regist : function(){
+    `,
+    methods: {
+        register: function() {
+            
+            let registerForm = document.getElementById('register-form');
+            let formData = new FormData(registerForm);
             let self = this;
-            let newUser = document.getElementById('CreateUser');
-            let form_data = new FormData(newUser);
-            fetch("/api/users/register",{
-                method: 'post',
-                body: form_data,
+            
+            fetch('/api/users/register', {
+                method: 'POST',
+                body: formData,
                 headers: {
                     'X-CSRFToken': token
                 },
                 credentials: 'same-origin'
-            }).then(function (jsonResponse) {
-                // display a success message
-                console.log(jsonResponse);
-                })
-                .catch(function (error) {
-                console.log(error);
-                });
-            }
+            })
+            .then(resp => resp.json())
+            .then(function(jsonResp) {
+                self.message = jsonResp.message;
+                self.error = jsonResp.error;
                 
-    }
+                if (self.message) {
+                    router.push({path: '/login', params: {response: self.message}})
+                } else {
+                    console.log(self.error);
+                }
+            })
+            .catch(function(error) {
+                console.log(error)
+            })
+        }
+    },
+    data: function() {
+        return {
+            error: [],
+            message: ''
+        }
+    },
+   
 });
 
 
@@ -310,7 +294,7 @@ const Explore = Vue.component('explore', {
 }
 });
 
-const uploadpost= Vue.component('upload-form', {
+const Newpost= Vue.component('newpost', {
     template: `
         <div>
           <div id ="tall1"><p class="text-center">New Post </p></div>
@@ -365,7 +349,7 @@ const uploadpost= Vue.component('upload-form', {
 });
 
 
-const UserProfile = Vue.component('use', {
+const UserProfile = Vue.component('userprofile', {
     template: `
     <div>
         <link rel="stylesheet" type="text/css" href="static/css/next.css">
@@ -445,7 +429,7 @@ const UserProfile = Vue.component('use', {
    }
 });
 
-const logout= Vue.component('logout-form', {
+const Logout= Vue.component('logout', {
     template: `<div></div>`,
     created: function() {
         
@@ -454,18 +438,33 @@ const logout= Vue.component('logout-form', {
     }
 });
 
+const NotFound = Vue.component('not-found', {
+    template: `
+    <div>
+        <h1>404 - Not Found</h1>
+    </div>
+    `,
+    data: function () {
+        return {}
+    }
+})
+
 // Define Routes
 const router = new VueRouter({
+    mode: 'history',
     routes: [
-        {path: "/", component: Home },
-        {path: "/register", component:Register},
-        {path: "/login", component:Login},
-        {path:"/explore", component:Explore}, //this suppose to work with, getpost, handlepost and like/likes, was thinking of making this all in one
-        {path:"/post/new", component: uploadpost},
-        {path:"/users/:userid",component: UserProfile},
-        {path:"/logout",component: logout}
-  ]
+        {path: "/", name: "home", component: Home, props: true},
+        {path: "/register", name: "register", component: Register},
+        {path: "/login", name: "login", component: Login, props: true},
+        {path: "/logout", name: "logout", component: Logout},
+        {path: "/explore", name: "explore", path: "/explore", component: Explore, props: true},
+        {path: "/posts/new", name: "newpost", component: NewPost},
+        {path: "/users/:user_id", name: "userprofile", component: UserProfile},
+        // This is a catch all route in case none of the above matches
+        {path: "*", component: NotFound}
+    ]
 });
+
 // Instantiate our main Vue Instance
 let app = new Vue({
     el: "#app",
