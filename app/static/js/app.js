@@ -5,7 +5,7 @@
     Domonique Eccleston - 620110584
     Jevoun Tyrell - 620106258
     Rogerio Jones - 620106249
-*/
+*/ 
 Vue.component('app-header', {
     template: `
     <div>
